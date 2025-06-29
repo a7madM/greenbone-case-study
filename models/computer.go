@@ -64,6 +64,9 @@ func (c *Computer) AfterSave(tx *gorm.DB) (err error) {
 	return nil
 }
 
+// this url should be injected from environment variables or configuration, but for simplicity, it's hardcoded here.
+var MESSAGING_SYSTEM_URL = "http://message_queue:8080/api/notify"
+
 func NotifyAdmin(employeeAbbreviation string) error {
 
 	type NotificationPayload struct {
@@ -83,7 +86,7 @@ func NotifyAdmin(employeeAbbreviation string) error {
 		return err
 	}
 
-	resp, err := http.Post("http://message_queue:8080/api/notify", "application/json", bytes.NewBuffer(jsonData))
+	resp, err := http.Post(MESSAGING_SYSTEM_URL, "application/json", bytes.NewBuffer(jsonData))
 
 	if err != nil {
 		return err
