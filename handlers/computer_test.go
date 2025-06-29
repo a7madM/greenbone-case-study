@@ -40,7 +40,7 @@ func TestCreateComputer(t *testing.T) {
 	assert.Equal(t, 201, resp.StatusCode)
 }
 
-func TestCreateComputerWhenEmployeeAbbreviationIsOverAssigned(t *testing.T) { // More than 3 computers assigned to the same employee
+func TestCreateComputerWhenEmployeeAbbreviationIsOverAssigned(t *testing.T) { // 3 computers or more are assigned to the same employee
 	app := setupTestApp()
 
 	createComputer("TestPC1", "11:22:33:44:55:90", "192.168.1.2", "EMP1")
