@@ -9,6 +9,16 @@ import (
 	"gorm.io/gorm"
 )
 
+// CreateComputer godoc
+// @Summary      Create a new computer
+// @Description  Creates a computer entry
+// @Tags         computers
+// @Accept       json
+// @Produce      json
+// @Param        computer  body  models.Computer  true  "Computer"
+// @Success      201  {object}  models.Computer
+// @Failure      400  {object}  map[string]string
+// @Router       /api/computers [post]
 func CreateComputer(c *fiber.Ctx) error {
 	var computer models.Computer
 
@@ -41,6 +51,16 @@ func CreateComputer(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(computer)
 }
 
+// GetComputerByID godoc
+// @Summary      Get a computer by ID
+// @Description  Retrieves a computer entry by its ID
+// @Tags         computers
+// @Accept       json
+// @Produce      json
+// @Param        id  path  int  true  "Computer ID"
+// @Success      200  {object}  models.Computer
+// @Failure      404  {object}  map[string]string
+// @Router       /api/computers/{id} [get]
 func GetComputerByID(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var computer models.Computer
@@ -57,6 +77,15 @@ func GetComputerByID(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(computer)
 }
 
+// GetAllComputers godoc
+// @Summary      Get all computers
+// @Description  Retrieves all computer entries
+// @Tags         computers
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}  models.Computer
+// @Failure      500  {object}  map[string]string
+// @Router       /api/computers [get]
 func GetAllComputers(c *fiber.Ctx) error {
 	var computers []models.Computer
 
@@ -71,6 +100,17 @@ func GetAllComputers(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(computers)
 }
 
+// DeleteComputerByID godoc
+// @Summary      Delete a computer by ID
+// @Description  Deletes a computer entry by its ID
+// @Tags         computers
+// @Accept       json
+// @Produce      json
+// @Param        id  path  int  true  "Computer ID"
+// @Success      204  {string}  string  "No Content"
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/computers/{id} [delete]
 func DeleteComputerByID(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var computer models.Computer
@@ -94,6 +134,19 @@ func DeleteComputerByID(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusNoContent).SendString("")
 }
 
+// UpdateComputerByID godoc
+// @Summary      Update a computer by ID
+// @Description  Updates a computer entry by its ID
+// @Tags         computers
+// @Accept       json
+// @Produce      json
+// @Param        id  path  int  true  "Computer ID"
+// @Param        computer  body  models.Computer  true  "Computer"
+// @Success      200  {object}  models.Computer
+// @Failure      400  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/computers/{id} [put]
 func UpdateComputerByID(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var computer models.Computer
@@ -127,6 +180,23 @@ func UpdateComputerByID(c *fiber.Ctx) error {
 	return c.JSON(computer)
 }
 
+// AssignComputer godoc
+// @Summary      Assign a computer to an employee
+// @Description  Assigns a computer to an employee by their abbreviation
+// @Tags         computers
+// @Accept       json
+// @Produce      json
+// @Param        id  path  int  true  "Computer ID"
+// @Param        abbr  path  string  true  "Employee Abbreviation"
+// @Success      200  {object}  models.Computer
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/computers/{id}/assign/{abbr} [post]
+// AssignComputer assigns a computer to an employee by their abbreviation.
+// It updates the computer's EmployeeAbbreviation field with the provided abbreviation.
+// If the computer is not found, it returns a 404 error.
+// If the assignment is successful, it returns the updated computer object.
+// If there is an error during the assignment, it returns a 500 error.
 func AssignComputer(c *fiber.Ctx) error {
 	id := c.Params("id")
 	abbr := c.Params("abbr")
@@ -146,6 +216,19 @@ func AssignComputer(c *fiber.Ctx) error {
 	return c.JSON(computer)
 }
 
+// GetEmployeeComputers godoc
+// @Summary      Get all computers assigned to an employee
+// @Description  Retrieves all computers assigned to an employee by their abbreviation
+// @Tags         computers
+// @Accept       json
+// @Produce      json
+// @Param        abbr  path  string  true  "Employee Abbreviation"
+// @Success      200  {array}  models.Computer
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/employees/{abbr}/computers [get]
+// GetEmployeeComputers retrieves all computers assigned to an employee by their abbreviation.
+// It queries the database for computers where the EmployeeAbbreviation matches the provided abbreviation.
 func GetEmployeeComputers(c *fiber.Ctx) error {
 	abbr := c.Params("abbr")
 	fmt.Println("Fetching computers for employee with abbreviation:", abbr)

@@ -14,11 +14,10 @@ import (
 // 2. Add validation for IP address format
 
 type Computer struct {
-	gorm.Model
 	ID                   uint   `json:"id" gorm:"primaryKey"`
-	MACAddress           string `json:"mac_address" validate:"required" gorm:"uniqueIndex"`
-	ComputerName         string `json:"computer_name" validate:"required"`
-	IPAddress            string `json:"ip_address" validate:"required" gorm:"uniqueIndex"`
+	MACAddress           string `json:"mac_address" gorm:"not null"`
+	ComputerName         string `json:"computer_name" gorm:"not null"`
+	IPAddress            string `json:"ip_address" gorm:"not null"`
 	EmployeeAbbreviation string `json:"employee_abbreviation,omitempty"`
 	Description          string `json:"description,omitempty"`
 }
@@ -36,6 +35,7 @@ func (c *Computer) BeforeSave(tx *gorm.DB) (err error) {
 	}
 	var count int64
 
+	// Check for duplicate MAC address
 	tx.Model(&Computer{}).Where("mac_address = ? AND id != ?", c.MACAddress, c.ID).Count(&count)
 	if count > 0 {
 		return gorm.ErrDuplicatedKey
@@ -64,6 +64,9 @@ func (c *Computer) AfterSave(tx *gorm.DB) (err error) {
 	return nil
 }
 
+// this url should be injected from environment variables or configuration, but for simplicity, it's hardcoded here.
+var MESSAGING_SYSTEM_URL = "http://message_queue:8080/api/notify"
+
 func NotifyAdmin(employeeAbbreviation string) error {
 
 	type NotificationPayload struct {
@@ -83,7 +86,7 @@ func NotifyAdmin(employeeAbbreviation string) error {
 		return err
 	}
 
-	resp, err := http.Post("http://message_queue:8080/api/notify", "application/json", bytes.NewBuffer(jsonData))
+	resp, err := http.Post(MESSAGING_SYSTEM_URL, "application/json", bytes.NewBuffer(jsonData))
 
 	if err != nil {
 		return err
