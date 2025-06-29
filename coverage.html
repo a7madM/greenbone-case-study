@@ -1,0 +1,253 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>database: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">greenbone-case-study/database/db.go (40.0%)</option>
+				
+				<option value="file1">greenbone-case-study/handlers/computer.go (100.0%)</option>
+				
+				<option value="file2">greenbone-case-study/main.go (0.0%)</option>
+				
+				<option value="file3">greenbone-case-study/models/computer.go (100.0%)</option>
+				
+				<option value="file4">greenbone-case-study/routes/route.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package database
+
+import (
+        "greenbone-case-study/models"
+        "log"
+
+        _ "github.com/glebarez/go-sqlite"
+        "gorm.io/driver/sqlite"
+        "gorm.io/gorm"
+)
+
+var DB *gorm.DB
+
+func ConnectDB() <span class="cov0" title="0">{
+        database, err := gorm.Open(sqlite.New(sqlite.Config{
+                DriverName: "sqlite",
+                DSN:        "computers.db",
+        }), &amp;gorm.Config{})
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Failed to connect to database ", err)
+        }</span>
+
+        <span class="cov0" title="0">database.AutoMigrate(&amp;models.Computer{})
+        DB = database</span>
+}
+
+func ConnectInMemoryDB() *gorm.DB <span class="cov8" title="1">{
+        database, err := gorm.Open(sqlite.New(sqlite.Config{
+                DriverName: "sqlite",
+                DSN:        "file::memory:?cache=shared",
+        }), &amp;gorm.Config{})
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Failed to connect to test DB:", err)
+        }</span>
+        <span class="cov8" title="1">database.AutoMigrate(&amp;models.Computer{})
+        return database</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package handlers
+
+import (
+        "greenbone-case-study/database"
+        "greenbone-case-study/models"
+
+        "github.com/gofiber/fiber/v2"
+)
+
+func CreateComputer(c *fiber.Ctx) error <span class="cov8" title="1">{
+        var computer models.Computer
+
+        if err := c.BodyParser(&amp;computer); err != nil </span><span class="cov8" title="1">{
+                return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+                        "error": "invalid request body",
+                })
+        }</span>
+
+        <span class="cov8" title="1">if !computer.Validate() </span><span class="cov8" title="1">{
+                return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+                        "error": "missing required fields",
+                })
+        }</span>
+
+        <span class="cov8" title="1">if err := database.DB.Create(&amp;computer).Error; err != nil </span><span class="cov8" title="1">{
+                return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+                        "error": "failed to create computer",
+                })
+        }</span>
+
+        <span class="cov8" title="1">return c.Status(fiber.StatusCreated).JSON(computer)</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package main
+
+import (
+        "fmt"
+
+        "greenbone-case-study/database"
+        "greenbone-case-study/routes"
+
+        "github.com/gofiber/fiber/v2"
+)
+
+func main() <span class="cov0" title="0">{
+        database.ConnectDB()
+
+        app := fiber.New()
+        routes.SetupRoutes(app)
+
+        fmt.Println("Starting server on port 3000...")
+        app.Listen(":3000")
+
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package models
+
+import (
+        "gorm.io/gorm"
+)
+
+type Computer struct {
+        gorm.Model
+
+        MACAddress           string `json:"mac_address" validate:"required"`
+        ComputerName         string `json:"computer_name" validate:"required"`
+        IPAddress            string `json:"ip_address" validate:"required"`
+        EmployeeAbbreviation string `json:"employee_abbreviation,omitempty"`
+        Description          string `json:"description,omitempty"`
+}
+
+func (c *Computer) Validate() bool <span class="cov8" title="1">{
+        if c.MACAddress == "" || c.ComputerName == "" || c.IPAddress == "" </span><span class="cov8" title="1">{
+                return false
+        }</span>
+        <span class="cov8" title="1">return true</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package routes
+
+import (
+        "fmt"
+        "greenbone-case-study/handlers"
+        "time"
+
+        "github.com/gofiber/fiber/v2"
+)
+
+func SetupRoutes(app *fiber.App) <span class="cov0" title="0">{
+        app.Get("/", func(c *fiber.Ctx) error </span><span class="cov0" title="0">{
+                return c.SendString("Welcome to the Greenbone Case Study API!")
+        }</span>)
+
+        <span class="cov0" title="0">app.Get("/health", func(c *fiber.Ctx) error </span><span class="cov0" title="0">{
+                return c.SendString(fmt.Sprintf("API is running! Current time: %s", time.Now().Format(time.RFC3339)))
+        }</span>)
+
+        <span class="cov0" title="0">api := app.Group("/api")
+        api.Post("/computers", handlers.CreateComputer)</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
