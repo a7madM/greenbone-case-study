@@ -4,6 +4,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// TODO:
+// 1. Add validation for MAC address format
+// 2. Add validation for IP address format
+
 type Computer struct {
 	gorm.Model
 	ID                   uint   `json:"id" gorm:"primaryKey"`

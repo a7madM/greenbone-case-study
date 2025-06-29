@@ -178,15 +178,38 @@ func GetAllComputers(c *fiber.Ctx) error <span class="cov8" title="1">{
         var computers []models.Computer
 
         err := database.DB.Find(&amp;computers).Error
-        fmt.Println("Error: ", err)
-        // if err != nil {
-        //         return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-        //                 "error": "failed to retrieve computers",
-        //         })
-        // }
 
-        return c.Status(fiber.StatusOK).JSON(computers)
-}</span>
+        if err != nil </span><span class="cov8" title="1">{
+                return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+                        "error": "failed to retrieve computers",
+                })
+        }</span>
+
+        <span class="cov8" title="1">return c.Status(fiber.StatusOK).JSON(computers)</span>
+}
+
+func DeleteComputerByID(c *fiber.Ctx) error <span class="cov8" title="1">{
+        id := c.Params("id")
+        var computer models.Computer
+
+        err := database.DB.First(&amp;computer, id).Error
+        if err != nil </span><span class="cov8" title="1">{
+                if err.Error() == "record not found" </span><span class="cov8" title="1">{
+                        return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+                                "error": "computer not found",
+                        })
+                }</span>
+        }
+
+        <span class="cov8" title="1">err = database.DB.Delete(&amp;computer).Error
+        if err != nil </span><span class="cov8" title="1">{
+                return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+                        "error": "failed to delete computer",
+                })
+        }</span>
+
+        <span class="cov8" title="1">return c.Status(fiber.StatusNoContent).SendString("")</span>
+}
 </pre>
 		
 		<pre class="file" id="file2" style="display: none">package main
@@ -217,6 +240,10 @@ func main() <span class="cov0" title="0">{
 import (
         "gorm.io/gorm"
 )
+
+// TODO:
+// 1. Add validation for MAC address format
+// 2. Add validation for IP address format
 
 type Computer struct {
         gorm.Model
@@ -272,7 +299,8 @@ func SetupRoutes(app *fiber.App) <span class="cov0" title="0">{
         }</span>)
         <span class="cov0" title="0">app.Post("/api/computers", handlers.CreateComputer)
         app.Get("/api/computers/:id", handlers.GetComputerByID)
-        app.Get("/api/computers", handlers.GetAllComputers)</span>
+        app.Get("/api/computers", handlers.GetAllComputers)
+        app.Delete("/api/computers/:id", handlers.DeleteComputerByID)</span>
 }
 </pre>
 		

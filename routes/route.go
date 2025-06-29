@@ -19,4 +19,5 @@ func SetupRoutes(app *fiber.App) {
 	app.Post("/api/computers", handlers.CreateComputer)
 	app.Get("/api/computers/:id", handlers.GetComputerByID)
 	app.Get("/api/computers", handlers.GetAllComputers)
+	app.Delete("/api/computers/:id", handlers.DeleteComputerByID)
 }

@@ -60,12 +60,35 @@ func GetAllComputers(c *fiber.Ctx) error {
 	var computers []models.Computer
 
 	err := database.DB.Find(&computers).Error
-	fmt.Println("Error: ", err)
-	// if err != nil {
-	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-	// 		"error": "failed to retrieve computers",
-	// 	})
-	// }
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to retrieve computers",
+		})
+	}
 
 	return c.Status(fiber.StatusOK).JSON(computers)
+}
+
+func DeleteComputerByID(c *fiber.Ctx) error {
+	id := c.Params("id")
+	var computer models.Computer
+
+	err := database.DB.First(&computer, id).Error
+	if err != nil {
+		if err.Error() == "record not found" {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": "computer not found",
+			})
+		}
+	}
+
+	err = database.DB.Delete(&computer).Error
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to delete computer",
+		})
+	}
+
+	return c.Status(fiber.StatusNoContent).SendString("")
 }
