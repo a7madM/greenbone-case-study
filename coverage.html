@@ -57,11 +57,11 @@
 				
 				<option value="file0">greenbone-case-study/database/db.go (40.0%)</option>
 				
-				<option value="file1">greenbone-case-study/handlers/computer.go (100.0%)</option>
+				<option value="file1">greenbone-case-study/handlers/computer.go (98.5%)</option>
 				
 				<option value="file2">greenbone-case-study/main.go (0.0%)</option>
 				
-				<option value="file3">greenbone-case-study/models/computer.go (100.0%)</option>
+				<option value="file3">greenbone-case-study/models/computer.go (90.9%)</option>
 				
 				<option value="file4">greenbone-case-study/routes/route.go (0.0%)</option>
 				
@@ -124,6 +124,7 @@ import (
         "greenbone-case-study/models"
 
         "github.com/gofiber/fiber/v2"
+        "gorm.io/gorm"
 )
 
 func CreateComputer(c *fiber.Ctx) error <span class="cov8" title="1">{
@@ -145,13 +146,14 @@ func CreateComputer(c *fiber.Ctx) error <span class="cov8" title="1">{
         if err != nil </span><span class="cov8" title="1">{
                 if err.Error() == "duplicated key not allowed" </span><span class="cov8" title="1">{
                         return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-                                "error": "computer with this MAC or IP address already exists",
-                        })
+                                "error": fmt.Sprintf("MAC Address %s or IP Address %s already exists", computer.MACAddress, computer.IPAddress)})
                 }</span>
 
-                <span class="cov8" title="1">return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-                        "error": "failed to create computer",
-                })</span>
+                <span class="cov8" title="1">if err != nil </span><span class="cov8" title="1">{
+                        return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+                                "error": err.Error(),
+                        })
+                }</span>
         }
 
         <span class="cov8" title="1">return c.Status(fiber.StatusCreated).JSON(computer)</span>
@@ -174,7 +176,6 @@ func GetComputerByID(c *fiber.Ctx) error <span class="cov8" title="1">{
 }
 
 func GetAllComputers(c *fiber.Ctx) error <span class="cov8" title="1">{
-        fmt.Println("Retrieving all computers")
         var computers []models.Computer
 
         err := database.DB.Find(&amp;computers).Error
@@ -210,6 +211,74 @@ func DeleteComputerByID(c *fiber.Ctx) error <span class="cov8" title="1">{
 
         <span class="cov8" title="1">return c.Status(fiber.StatusNoContent).SendString("")</span>
 }
+
+func UpdateComputerByID(c *fiber.Ctx) error <span class="cov8" title="1">{
+        id := c.Params("id")
+        var computer models.Computer
+
+        if err := database.DB.First(&amp;computer, id).Error; err != nil </span><span class="cov8" title="1">{
+                return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "computer not found"})
+        }</span>
+
+        <span class="cov8" title="1">var input models.Computer
+        if err := c.BodyParser(&amp;input); err != nil </span><span class="cov8" title="1">{
+                return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid body"})
+        }</span>
+
+        <span class="cov8" title="1">computer.MACAddress = input.MACAddress
+        computer.ComputerName = input.ComputerName
+        computer.IPAddress = input.IPAddress
+        computer.EmployeeAbbreviation = input.EmployeeAbbreviation
+        computer.Description = input.Description
+
+        err := database.DB.Save(&amp;computer).Error
+
+        if err != nil </span><span class="cov8" title="1">{
+
+                if err == gorm.ErrInvalidData </span><span class="cov8" title="1">{
+
+                        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+                                "error": "Invalid data provided. Please ensure all required fields are filled correctly.",
+                        })
+                }</span>
+        }
+        <span class="cov8" title="1">return c.JSON(computer)</span>
+}
+
+func AssignComputer(c *fiber.Ctx) error <span class="cov8" title="1">{
+        id := c.Params("id")
+        abbr := c.Params("abbr")
+        fmt.Println("Assigning computer with ID:", id, "to employee with abbreviation:", abbr)
+
+        var computer models.Computer
+
+        if err := database.DB.First(&amp;computer, id).Error; err != nil </span><span class="cov8" title="1">{
+                return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Can't find Computer with ID " + id})
+        }</span>
+
+        <span class="cov8" title="1">computer.EmployeeAbbreviation = abbr
+
+        if err := database.DB.Save(&amp;computer).Error; err != nil </span><span class="cov0" title="0">{
+                return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to assign computer"})
+        }</span>
+        <span class="cov8" title="1">return c.JSON(computer)</span>
+}
+
+func GetEmployeeComputers(c *fiber.Ctx) error <span class="cov8" title="1">{
+        abbr := c.Params("abbr")
+        fmt.Println("Fetching computers for employee with abbreviation:", abbr)
+
+        var computers []models.Computer
+
+        err := database.DB.Where("employee_abbreviation = ?", abbr).Find(&amp;computers).Error
+        if err != nil </span><span class="cov8" title="1">{
+                return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+                        "error": "failed to fetch employee computers",
+                })
+        }</span>
+
+        <span class="cov8" title="1">return c.Status(fiber.StatusOK).JSON(computers)</span>
+}
 </pre>
 		
 		<pre class="file" id="file2" style="display: none">package main
@@ -238,6 +307,11 @@ func main() <span class="cov0" title="0">{
 		<pre class="file" id="file3" style="display: none">package models
 
 import (
+        "bytes"
+        "encoding/json"
+        "fmt"
+        "net/http"
+
         "gorm.io/gorm"
 )
 
@@ -248,9 +322,9 @@ import (
 type Computer struct {
         gorm.Model
         ID                   uint   `json:"id" gorm:"primaryKey"`
-        MACAddress           string `json:"mac_address" validate:"required"`
+        MACAddress           string `json:"mac_address" validate:"required" gorm:"uniqueIndex"`
         ComputerName         string `json:"computer_name" validate:"required"`
-        IPAddress            string `json:"ip_address" validate:"required"`
+        IPAddress            string `json:"ip_address" validate:"required" gorm:"uniqueIndex"`
         EmployeeAbbreviation string `json:"employee_abbreviation,omitempty"`
         Description          string `json:"description,omitempty"`
 }
@@ -262,19 +336,70 @@ func (c *Computer) Validate() bool <span class="cov8" title="1">{
         <span class="cov8" title="1">return true</span>
 }
 
-func (c *Computer) BeforeCreate(tx *gorm.DB) (err error) <span class="cov8" title="1">{
-        var count int64
+func (c *Computer) BeforeSave(tx *gorm.DB) (err error) <span class="cov8" title="1">{
+        if !c.Validate() </span><span class="cov8" title="1">{
+                return gorm.ErrInvalidData
+        }</span>
+        <span class="cov8" title="1">var count int64
 
-        tx.Model(&amp;Computer{}).Where("mac_address = ?", c.MACAddress).Count(&amp;count)
+        tx.Model(&amp;Computer{}).Where("mac_address = ? AND id != ?", c.MACAddress, c.ID).Count(&amp;count)
         if count &gt; 0 </span><span class="cov8" title="1">{
                 return gorm.ErrDuplicatedKey
         }</span>
 
-        <span class="cov8" title="1">tx.Model(&amp;Computer{}).Where("ip_address = ?", c.IPAddress).Count(&amp;count)
+        <span class="cov8" title="1">tx.Model(&amp;Computer{}).Where("ip_address = ? AND id != ?", c.IPAddress, c.ID).Count(&amp;count)
         if count &gt; 0 </span><span class="cov8" title="1">{
                 return gorm.ErrDuplicatedKey
         }</span>
 
+        <span class="cov8" title="1">return nil</span>
+}
+
+func (c *Computer) AfterSave(tx *gorm.DB) (err error) <span class="cov8" title="1">{
+        employee := c.EmployeeAbbreviation
+        if employee == "" </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+        <span class="cov8" title="1">var count int64
+        tx.Model(&amp;Computer{}).Where("employee_abbreviation = ?", employee).Count(&amp;count)
+
+        if count &gt;= 3 </span><span class="cov8" title="1">{
+                return NotifyAdmin(employee)
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+func NotifyAdmin(employeeAbbreviation string) error <span class="cov8" title="1">{
+
+        type NotificationPayload struct {
+                EmployeeAbbreviation string `json:"employeeAbbreviation"`
+                Level                string `json:"level"`
+                Message              string `json:"message"`
+        }
+
+        payload := NotificationPayload{
+                EmployeeAbbreviation: employeeAbbreviation,
+                Level:                "warning",
+                Message:              "some message",
+        }
+
+        jsonData, err := json.Marshal(payload)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">resp, err := http.Post("http://message_queue:8080/api/notify", "application/json", bytes.NewBuffer(jsonData))
+
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">defer resp.Body.Close()
+
+        if resp.StatusCode != http.StatusOK </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to notify admin: %s", resp.Status)
+        }</span>
         <span class="cov8" title="1">return nil</span>
 }
 </pre>
@@ -300,7 +425,11 @@ func SetupRoutes(app *fiber.App) <span class="cov0" title="0">{
         <span class="cov0" title="0">app.Post("/api/computers", handlers.CreateComputer)
         app.Get("/api/computers/:id", handlers.GetComputerByID)
         app.Get("/api/computers", handlers.GetAllComputers)
-        app.Delete("/api/computers/:id", handlers.DeleteComputerByID)</span>
+        app.Delete("/api/computers/:id", handlers.DeleteComputerByID)
+        app.Put("/api/computers/:id", handlers.UpdateComputerByID)
+
+        app.Put("/api/computers/:id/assign/:abbr", handlers.AssignComputer)
+        app.Get("/api/employees/:abbr/computers", handlers.GetEmployeeComputers)</span>
 }
 </pre>
 		
