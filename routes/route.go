@@ -2,6 +2,7 @@ package routes
 
 import (
 	"fmt"
+	"greenbone-case-study/handlers"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -15,12 +16,7 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.SendString(fmt.Sprintf("API is running! Current time: %s", time.Now().Format(time.RFC3339)))
 	})
-
-	api := app.Group("/api")
-
-	api.Get("/test", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{
-			"message": "This is a test endpoint",
-		})
-	})
+	app.Post("/api/computers", handlers.CreateComputer)
+	app.Get("/api/computers/:id", handlers.GetComputerByID)
+	app.Get("/api/computers", handlers.GetAllComputers)
 }
