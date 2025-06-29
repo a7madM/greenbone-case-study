@@ -1,6 +1,10 @@
 up:
 	docker compose up -d
+	docker compose exec -T app go run main.go -d
+
 dev: up bash
+
+restart: stop dev
 
 bash: 
 	docker compose exec app ash
@@ -18,6 +22,3 @@ logs:
 
 stop: 
 	docker compose stop
-
-down: 
-	docker compose down

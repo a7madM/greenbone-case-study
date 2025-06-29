@@ -1,16 +1,11 @@
 mode: set
-greenbone-case-study/main.go:12.13,21.2 5 0
 greenbone-case-study/database/db.go:14.18,19.16 2 0
 greenbone-case-study/database/db.go:19.16,21.3 1 0
 greenbone-case-study/database/db.go:23.2,24.15 2 0
 greenbone-case-study/database/db.go:27.35,32.16 2 0
 greenbone-case-study/database/db.go:32.16,34.3 1 0
 greenbone-case-study/database/db.go:35.2,36.17 2 0
-greenbone-case-study/routes/route.go:11.34,12.40 1 0
-greenbone-case-study/routes/route.go:12.40,14.3 1 0
-greenbone-case-study/routes/route.go:16.2,16.46 1 0
-greenbone-case-study/routes/route.go:16.46,18.3 1 0
-greenbone-case-study/routes/route.go:19.2,26.74 7 0
+greenbone-case-study/main.go:12.13,21.2 5 0
 greenbone-case-study/models/computer.go:26.36,27.69 1 0
 greenbone-case-study/models/computer.go:27.69,29.3 1 0
 greenbone-case-study/models/computer.go:30.2,30.13 1 0
@@ -33,6 +28,11 @@ greenbone-case-study/models/computer.go:88.16,90.3 1 0
 greenbone-case-study/models/computer.go:92.2,94.38 2 0
 greenbone-case-study/models/computer.go:94.38,96.3 1 0
 greenbone-case-study/models/computer.go:97.2,97.12 1 0
+greenbone-case-study/routes/route.go:11.34,12.40 1 0
+greenbone-case-study/routes/route.go:12.40,14.3 1 0
+greenbone-case-study/routes/route.go:16.2,16.46 1 0
+greenbone-case-study/routes/route.go:16.46,18.3 1 0
+greenbone-case-study/routes/route.go:19.2,25.74 7 0
 greenbone-case-study/database/db.go:14.18,19.16 2 0
 greenbone-case-study/database/db.go:19.16,21.3 1 0
 greenbone-case-study/database/db.go:23.2,24.15 2 0

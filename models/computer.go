@@ -14,11 +14,10 @@ import (
 // 2. Add validation for IP address format
 
 type Computer struct {
-	gorm.Model
 	ID                   uint   `json:"id" gorm:"primaryKey"`
-	MACAddress           string `json:"mac_address" validate:"required" gorm:"uniqueIndex"`
-	ComputerName         string `json:"computer_name" validate:"required"`
-	IPAddress            string `json:"ip_address" validate:"required" gorm:"uniqueIndex"`
+	MACAddress           string `json:"mac_address" gorm:"not null"`
+	ComputerName         string `json:"computer_name" gorm:"not null"`
+	IPAddress            string `json:"ip_address" gorm:"not null"`
 	EmployeeAbbreviation string `json:"employee_abbreviation,omitempty"`
 	Description          string `json:"description,omitempty"`
 }
@@ -36,6 +35,7 @@ func (c *Computer) BeforeSave(tx *gorm.DB) (err error) {
 	}
 	var count int64
 
+	// Check for duplicate MAC address
 	tx.Model(&Computer{}).Where("mac_address = ? AND id != ?", c.MACAddress, c.ID).Count(&count)
 	if count > 0 {
 		return gorm.ErrDuplicatedKey

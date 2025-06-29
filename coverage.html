@@ -427,7 +427,6 @@ func SetupRoutes(app *fiber.App) <span class="cov0" title="0">{
         app.Get("/api/computers", handlers.GetAllComputers)
         app.Delete("/api/computers/:id", handlers.DeleteComputerByID)
         app.Put("/api/computers/:id", handlers.UpdateComputerByID)
-
         app.Put("/api/computers/:id/assign/:abbr", handlers.AssignComputer)
         app.Get("/api/employees/:abbr/computers", handlers.GetEmployeeComputers)</span>
 }
