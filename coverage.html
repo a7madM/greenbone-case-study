@@ -119,6 +119,7 @@ func ConnectInMemoryDB() *gorm.DB <span class="cov8" title="1">{
 		<pre class="file" id="file1" style="display: none">package handlers
 
 import (
+        "fmt"
         "greenbone-case-study/database"
         "greenbone-case-study/models"
 
@@ -136,18 +137,56 @@ func CreateComputer(c *fiber.Ctx) error <span class="cov8" title="1">{
 
         <span class="cov8" title="1">if !computer.Validate() </span><span class="cov8" title="1">{
                 return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-                        "error": "missing required fields",
+                        "error": "name, ip_address, MAC address are all required fields",
                 })
         }</span>
 
-        <span class="cov8" title="1">if err := database.DB.Create(&amp;computer).Error; err != nil </span><span class="cov8" title="1">{
-                return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+        <span class="cov8" title="1">err := database.DB.Create(&amp;computer).Error
+        if err != nil </span><span class="cov8" title="1">{
+                if err.Error() == "duplicated key not allowed" </span><span class="cov8" title="1">{
+                        return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+                                "error": "computer with this MAC or IP address already exists",
+                        })
+                }</span>
+
+                <span class="cov8" title="1">return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
                         "error": "failed to create computer",
-                })
-        }</span>
+                })</span>
+        }
 
         <span class="cov8" title="1">return c.Status(fiber.StatusCreated).JSON(computer)</span>
 }
+
+func GetComputerByID(c *fiber.Ctx) error <span class="cov8" title="1">{
+        id := c.Params("id")
+        var computer models.Computer
+
+        err := database.DB.First(&amp;computer, id).Error
+        if err != nil </span><span class="cov8" title="1">{
+                if err.Error() == "record not found" </span><span class="cov8" title="1">{
+                        return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+                                "error": "computer not found",
+                        })
+                }</span>
+        }
+
+        <span class="cov8" title="1">return c.Status(fiber.StatusOK).JSON(computer)</span>
+}
+
+func GetAllComputers(c *fiber.Ctx) error <span class="cov8" title="1">{
+        fmt.Println("Retrieving all computers")
+        var computers []models.Computer
+
+        err := database.DB.Find(&amp;computers).Error
+        fmt.Println("Error: ", err)
+        // if err != nil {
+        //         return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+        //                 "error": "failed to retrieve computers",
+        //         })
+        // }
+
+        return c.Status(fiber.StatusOK).JSON(computers)
+}</span>
 </pre>
 		
 		<pre class="file" id="file2" style="display: none">package main
@@ -181,7 +220,7 @@ import (
 
 type Computer struct {
         gorm.Model
-
+        ID                   uint   `json:"id" gorm:"primaryKey"`
         MACAddress           string `json:"mac_address" validate:"required"`
         ComputerName         string `json:"computer_name" validate:"required"`
         IPAddress            string `json:"ip_address" validate:"required"`
@@ -194,6 +233,22 @@ func (c *Computer) Validate() bool <span class="cov8" title="1">{
                 return false
         }</span>
         <span class="cov8" title="1">return true</span>
+}
+
+func (c *Computer) BeforeCreate(tx *gorm.DB) (err error) <span class="cov8" title="1">{
+        var count int64
+
+        tx.Model(&amp;Computer{}).Where("mac_address = ?", c.MACAddress).Count(&amp;count)
+        if count &gt; 0 </span><span class="cov8" title="1">{
+                return gorm.ErrDuplicatedKey
+        }</span>
+
+        <span class="cov8" title="1">tx.Model(&amp;Computer{}).Where("ip_address = ?", c.IPAddress).Count(&amp;count)
+        if count &gt; 0 </span><span class="cov8" title="1">{
+                return gorm.ErrDuplicatedKey
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
 }
 </pre>
 		
@@ -215,9 +270,9 @@ func SetupRoutes(app *fiber.App) <span class="cov0" title="0">{
         <span class="cov0" title="0">app.Get("/health", func(c *fiber.Ctx) error </span><span class="cov0" title="0">{
                 return c.SendString(fmt.Sprintf("API is running! Current time: %s", time.Now().Format(time.RFC3339)))
         }</span>)
-
-        <span class="cov0" title="0">api := app.Group("/api")
-        api.Post("/computers", handlers.CreateComputer)</span>
+        <span class="cov0" title="0">app.Post("/api/computers", handlers.CreateComputer)
+        app.Get("/api/computers/:id", handlers.GetComputerByID)
+        app.Get("/api/computers", handlers.GetAllComputers)</span>
 }
 </pre>
 		
