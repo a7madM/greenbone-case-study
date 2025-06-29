@@ -1,0 +1,22 @@
+services:
+  message_queue:
+    platform: linux/x86_64
+    image: greenbone/exercise-admin-notification
+    networks:
+      - app-network
+      
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      - message_queue
+    volumes:
+      - .:/app
+    command: ["ash", "-c", "while true; do sleep 30; done;"]
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
