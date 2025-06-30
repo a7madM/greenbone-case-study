@@ -37,3 +37,5 @@ The project includes a Makefile with the following commands:
 Once running, the application will be available at:
 - Main application: http://localhost:3000
 - API documentation: http://localhost:3000/swagger
+
+![Screenshot 2025-06-30 at 11 57 52](https://github.com/user-attachments/assets/fd399833-95ff-4365-95ed-e73ec2029c48)
