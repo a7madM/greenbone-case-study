@@ -18,9 +18,7 @@ cd greenbone-case-study
 make dev
 ```
 
-
 ### Makefile Usage
-
 The project includes a Makefile with the following commands:
 
 - `make up` - Start all services using Docker Compose
@@ -30,12 +28,22 @@ The project includes a Makefile with the following commands:
 - `make test` - Run test suite
 - `make restart` - Stop and Restarts container
 
-### Access
 
+### Improvement areas and Best Practices
+- Separate validation logic from data models to improve maintainability
+- Extract business logic from HTTP handlers into dedicated service layers
+- Implement pagination for API endpoints such as GetAllComputers and FilterByEmployee
+- Add production-ready features including authentication, structured logging, and CI/CD pipelines
+- Expand test coverage across all application components
+- Mock exteårnal network calls (like the Notifier service) in testing environments to ensure test isolation and reliability
+- Enhance computer model validation by adding format validation for MAC addresses and IP addresses
+
+### Access
 Once running, the application will be available at:
 - Main application: http://localhost:3000
 - API documentation: http://localhost:3000/swagger
 
+#### Swagger
 ![Screenshot 2025-06-30 at 11 57 52](https://github.com/user-attachments/assets/fd399833-95ff-4365-95ed-e73ec2029c48)
 
 ### System Overview
