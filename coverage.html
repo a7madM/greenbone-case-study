@@ -59,13 +59,27 @@
 				
 				<option value="file1">greenbone-case-study/docs/docs.go (0.0%)</option>
 				
-				<option value="file2">greenbone-case-study/handlers/computer.go (97.4%)</option>
+				<option value="file2">greenbone-case-study/handlers/computers/assign.go (90.0%)</option>
 				
-				<option value="file3">greenbone-case-study/main.go (0.0%)</option>
+				<option value="file3">greenbone-case-study/handlers/computers/by_employee.go (100.0%)</option>
 				
-				<option value="file4">greenbone-case-study/models/computer.go (90.9%)</option>
+				<option value="file4">greenbone-case-study/handlers/computers/create.go (100.0%)</option>
 				
-				<option value="file5">greenbone-case-study/routes/route.go (0.0%)</option>
+				<option value="file5">greenbone-case-study/handlers/computers/delete.go (100.0%)</option>
+				
+				<option value="file6">greenbone-case-study/handlers/computers/index.go (100.0%)</option>
+				
+				<option value="file7">greenbone-case-study/handlers/computers/show.go (100.0%)</option>
+				
+				<option value="file8">greenbone-case-study/handlers/computers/unassign.go (87.5%)</option>
+				
+				<option value="file9">greenbone-case-study/handlers/computers/update.go (100.0%)</option>
+				
+				<option value="file10">greenbone-case-study/main.go (0.0%)</option>
+				
+				<option value="file11">greenbone-case-study/models/computer.go (90.9%)</option>
+				
+				<option value="file12">greenbone-case-study/routes/route.go (0.0%)</option>
 				
 				</select>
 			</div>
@@ -523,7 +537,7 @@ func init() <span class="cov0" title="0">{
 }</span>
 </pre>
 		
-		<pre class="file" id="file2" style="display: none">package handlers
+		<pre class="file" id="file2" style="display: none">package computers
 
 import (
         "fmt"
@@ -531,10 +545,96 @@ import (
         "greenbone-case-study/models"
 
         "github.com/gofiber/fiber/v2"
-        "gorm.io/gorm"
 )
 
-// CreateComputer godoc
+// Assign godoc
+// @Summary      Assign a computer to an employee
+// @Description  Assigns a computer to an employee by their abbreviation
+// @Tags         computers
+// @Accept       json
+// @Produce      json
+// @Param        id  path  int  true  "Computer ID"
+// @Param        abbr  path  string  true  "Employee Abbreviation"
+// @Success      200  {object}  models.Computer
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/computers/{id}/assign/{abbr} [post]
+// Assign assigns a computer to an employee by their abbreviation.
+// It updates the computer's EmployeeAbbreviation field with the provided abbreviation.
+// If the computer is not found, it returns a 404 error.
+// If the assignment is successful, it returns the updated computer object.
+// If there is an error during the assignment, it returns a 500 error.
+func Assign(c *fiber.Ctx) error <span class="cov8" title="1">{
+        id := c.Params("id")
+        abbr := c.Params("abbr")
+        fmt.Println("Assigning computer with ID:", id, "to employee with abbreviation:", abbr)
+
+        var computer models.Computer
+
+        if err := database.DB.First(&amp;computer, id).Error; err != nil </span><span class="cov8" title="1">{
+                return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Can't find Computer with ID " + id})
+        }</span>
+
+        <span class="cov8" title="1">computer.EmployeeAbbreviation = abbr
+
+        if err := database.DB.Save(&amp;computer).Error; err != nil </span><span class="cov0" title="0">{
+                return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to assign computer"})
+        }</span>
+        <span class="cov8" title="1">return c.JSON(computer)</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package computers
+
+import (
+        "fmt"
+        "greenbone-case-study/database"
+        "greenbone-case-study/models"
+
+        "github.com/gofiber/fiber/v2"
+)
+
+// FilterByEmployeeAbbr godoc
+// @Summary      Get all computers assigned to an employee
+// @Description  Retrieves all computers assigned to an employee by their abbreviation
+// @Tags         computers
+// @Accept       json
+// @Produce      json
+// @Param        abbr  path  string  true  "Employee Abbreviation"
+// @Success      200  {array}  models.Computer
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/employees/{abbr}/computers [get]
+// FilterByEmployeeAbbr retrieves all computers assigned to an employee by their abbreviation.
+// It queries the database for computers where the EmployeeAbbreviation matches the provided abbreviation.
+func FilterByEmployeeAbbr(c *fiber.Ctx) error <span class="cov8" title="1">{
+        abbr := c.Params("abbr")
+        fmt.Println("Fetching computers for employee with abbreviation:", abbr)
+
+        var computers []models.Computer
+
+        err := database.DB.Where("employee_abbreviation = ?", abbr).Find(&amp;computers).Error
+        if err != nil </span><span class="cov8" title="1">{
+                return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+                        "error": "failed to fetch employee computers",
+                })
+        }</span>
+
+        <span class="cov8" title="1">return c.Status(fiber.StatusOK).JSON(computers)</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package computers
+
+import (
+        "fmt"
+        "greenbone-case-study/database"
+        "greenbone-case-study/models"
+
+        "github.com/gofiber/fiber/v2"
+)
+
+// Create godoc
 // @Summary      Create a new computer
 // @Description  Creates a computer entry
 // @Tags         computers
@@ -544,7 +644,7 @@ import (
 // @Success      201  {object}  models.Computer
 // @Failure      400  {object}  map[string]string
 // @Router       /api/computers [post]
-func CreateComputer(c *fiber.Ctx) error <span class="cov8" title="1">{
+func Create(c *fiber.Ctx) error <span class="cov8" title="1">{
         var computer models.Computer
 
         if err := c.BodyParser(&amp;computer); err != nil </span><span class="cov8" title="1">{
@@ -575,57 +675,18 @@ func CreateComputer(c *fiber.Ctx) error <span class="cov8" title="1">{
 
         <span class="cov8" title="1">return c.Status(fiber.StatusCreated).JSON(computer)</span>
 }
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package computers
 
-// GetComputerByID godoc
-// @Summary      Get a computer by ID
-// @Description  Retrieves a computer entry by its ID
-// @Tags         computers
-// @Accept       json
-// @Produce      json
-// @Param        id  path  int  true  "Computer ID"
-// @Success      200  {object}  models.Computer
-// @Failure      404  {object}  map[string]string
-// @Router       /api/computers/{id} [get]
-func GetComputerByID(c *fiber.Ctx) error <span class="cov8" title="1">{
-        id := c.Params("id")
-        var computer models.Computer
+import (
+        "greenbone-case-study/database"
+        "greenbone-case-study/models"
 
-        err := database.DB.First(&amp;computer, id).Error
-        if err != nil </span><span class="cov8" title="1">{
-                if err.Error() == "record not found" </span><span class="cov8" title="1">{
-                        return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-                                "error": "computer not found",
-                        })
-                }</span>
-        }
+        "github.com/gofiber/fiber/v2"
+)
 
-        <span class="cov8" title="1">return c.Status(fiber.StatusOK).JSON(computer)</span>
-}
-
-// GetAllComputers godoc
-// @Summary      Get all computers
-// @Description  Retrieves all computer entries
-// @Tags         computers
-// @Accept       json
-// @Produce      json
-// @Success      200  {array}  models.Computer
-// @Failure      500  {object}  map[string]string
-// @Router       /api/computers [get]
-func GetAllComputers(c *fiber.Ctx) error <span class="cov8" title="1">{
-        var computers []models.Computer
-
-        err := database.DB.Find(&amp;computers).Error
-
-        if err != nil </span><span class="cov8" title="1">{
-                return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-                        "error": "failed to retrieve computers",
-                })
-        }</span>
-
-        <span class="cov8" title="1">return c.Status(fiber.StatusOK).JSON(computers)</span>
-}
-
-// DeleteComputerByID godoc
+// DeleteByID godoc
 // @Summary      Delete a computer by ID
 // @Description  Deletes a computer entry by its ID
 // @Tags         computers
@@ -636,7 +697,7 @@ func GetAllComputers(c *fiber.Ctx) error <span class="cov8" title="1">{
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
 // @Router       /api/computers/{id} [delete]
-func DeleteComputerByID(c *fiber.Ctx) error <span class="cov8" title="1">{
+func DeleteByID(c *fiber.Ctx) error <span class="cov8" title="1">{
         id := c.Params("id")
         var computer models.Computer
 
@@ -658,6 +719,128 @@ func DeleteComputerByID(c *fiber.Ctx) error <span class="cov8" title="1">{
 
         <span class="cov8" title="1">return c.Status(fiber.StatusNoContent).SendString("")</span>
 }
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package computers
+
+import (
+        "greenbone-case-study/database"
+        "greenbone-case-study/models"
+
+        "github.com/gofiber/fiber/v2"
+)
+
+// GetAllComputers godoc
+// @Summary      Get all computers
+// @Description  Retrieves all computer entries
+// @Tags         computers
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}  models.Computer
+// @Failure      500  {object}  map[string]string
+// @Router       /api/computers [get]
+func GetAll(c *fiber.Ctx) error <span class="cov8" title="1">{
+        var computers []models.Computer
+
+        err := database.DB.Find(&amp;computers).Error
+
+        if err != nil </span><span class="cov8" title="1">{
+                return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+                        "error": "failed to retrieve computers",
+                })
+        }</span>
+
+        <span class="cov8" title="1">return c.Status(fiber.StatusOK).JSON(computers)</span>
+}
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package computers
+
+import (
+        "greenbone-case-study/database"
+        "greenbone-case-study/models"
+
+        "github.com/gofiber/fiber/v2"
+)
+
+// GetByID godoc
+// @Summary      Get a computer by ID
+// @Description  Retrieves a computer entry by its ID
+// @Tags         computers
+// @Accept       json
+// @Produce      json
+// @Param        id  path  int  true  "Computer ID"
+// @Success      200  {object}  models.Computer
+// @Failure      404  {object}  map[string]string
+// @Router       /api/computers/{id} [get]
+func GetByID(c *fiber.Ctx) error <span class="cov8" title="1">{
+        id := c.Params("id")
+        var computer models.Computer
+
+        err := database.DB.First(&amp;computer, id).Error
+        if err != nil </span><span class="cov8" title="1">{
+                if err.Error() == "record not found" </span><span class="cov8" title="1">{
+                        return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+                                "error": "computer not found",
+                        })
+                }</span>
+        }
+
+        <span class="cov8" title="1">return c.Status(fiber.StatusOK).JSON(computer)</span>
+}
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package computers
+
+import (
+        "greenbone-case-study/database"
+        "greenbone-case-study/models"
+
+        "github.com/gofiber/fiber/v2"
+)
+
+// UnAssign godoc
+// @Summary      Unassign a computer from an employee
+// @Description  Unassigns a computer from an employee by its ID
+// @Tags         computers
+// @Accept       json
+// @Produce      json
+// @Param        id  path  int  true  "Computer ID"
+// @Success      200  {object}  models.Computer
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/computers/{id}/unassign [post]
+// UnAssign unassigns a computer from an employee by its ID.
+// It sets the EmployeeAbbreviation field to an empty string.
+// If the computer is not found, it returns a 404 error.
+// If the unassignment is successful, it returns the updated computer object.
+func UnAssign(c *fiber.Ctx) error <span class="cov8" title="1">{
+        id := c.Params("id")
+
+        var computer models.Computer
+
+        if err := database.DB.First(&amp;computer, id).Error; err != nil </span><span class="cov8" title="1">{
+                return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Can't find Computer with ID " + id})
+        }</span>
+
+        <span class="cov8" title="1">computer.EmployeeAbbreviation = ""
+
+        if err := database.DB.Save(&amp;computer).Error; err != nil </span><span class="cov0" title="0">{
+                return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to unassign computer"})
+        }</span>
+        <span class="cov8" title="1">return c.JSON(computer)</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package computers
+
+import (
+        "greenbone-case-study/database"
+        "greenbone-case-study/models"
+
+        "github.com/gofiber/fiber/v2"
+        "gorm.io/gorm"
+)
 
 // UpdateComputerByID godoc
 // @Summary      Update a computer by ID
@@ -672,7 +855,7 @@ func DeleteComputerByID(c *fiber.Ctx) error <span class="cov8" title="1">{
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
 // @Router       /api/computers/{id} [put]
-func UpdateComputerByID(c *fiber.Ctx) error <span class="cov8" title="1">{
+func UpdateByID(c *fiber.Ctx) error <span class="cov8" title="1">{
         id := c.Params("id")
         var computer models.Computer
 
@@ -704,106 +887,9 @@ func UpdateComputerByID(c *fiber.Ctx) error <span class="cov8" title="1">{
         }
         <span class="cov8" title="1">return c.JSON(computer)</span>
 }
-
-// AssignComputer godoc
-// @Summary      Assign a computer to an employee
-// @Description  Assigns a computer to an employee by their abbreviation
-// @Tags         computers
-// @Accept       json
-// @Produce      json
-// @Param        id  path  int  true  "Computer ID"
-// @Param        abbr  path  string  true  "Employee Abbreviation"
-// @Success      200  {object}  models.Computer
-// @Failure      404  {object}  map[string]string
-// @Failure      500  {object}  map[string]string
-// @Router       /api/computers/{id}/assign/{abbr} [post]
-// AssignComputer assigns a computer to an employee by their abbreviation.
-// It updates the computer's EmployeeAbbreviation field with the provided abbreviation.
-// If the computer is not found, it returns a 404 error.
-// If the assignment is successful, it returns the updated computer object.
-// If there is an error during the assignment, it returns a 500 error.
-func AssignComputer(c *fiber.Ctx) error <span class="cov8" title="1">{
-        id := c.Params("id")
-        abbr := c.Params("abbr")
-        fmt.Println("Assigning computer with ID:", id, "to employee with abbreviation:", abbr)
-
-        var computer models.Computer
-
-        if err := database.DB.First(&amp;computer, id).Error; err != nil </span><span class="cov8" title="1">{
-                return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Can't find Computer with ID " + id})
-        }</span>
-
-        <span class="cov8" title="1">computer.EmployeeAbbreviation = abbr
-
-        if err := database.DB.Save(&amp;computer).Error; err != nil </span><span class="cov0" title="0">{
-                return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to assign computer"})
-        }</span>
-        <span class="cov8" title="1">return c.JSON(computer)</span>
-}
-
-// GetEmployeeComputers godoc
-// @Summary      Get all computers assigned to an employee
-// @Description  Retrieves all computers assigned to an employee by their abbreviation
-// @Tags         computers
-// @Accept       json
-// @Produce      json
-// @Param        abbr  path  string  true  "Employee Abbreviation"
-// @Success      200  {array}  models.Computer
-// @Failure      404  {object}  map[string]string
-// @Failure      500  {object}  map[string]string
-// @Router       /api/employees/{abbr}/computers [get]
-// GetEmployeeComputers retrieves all computers assigned to an employee by their abbreviation.
-// It queries the database for computers where the EmployeeAbbreviation matches the provided abbreviation.
-func GetEmployeeComputers(c *fiber.Ctx) error <span class="cov8" title="1">{
-        abbr := c.Params("abbr")
-        fmt.Println("Fetching computers for employee with abbreviation:", abbr)
-
-        var computers []models.Computer
-
-        err := database.DB.Where("employee_abbreviation = ?", abbr).Find(&amp;computers).Error
-        if err != nil </span><span class="cov8" title="1">{
-                return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-                        "error": "failed to fetch employee computers",
-                })
-        }</span>
-
-        <span class="cov8" title="1">return c.Status(fiber.StatusOK).JSON(computers)</span>
-}
-
-// UnAssignComputer godoc
-// @Summary      Unassign a computer from an employee
-// @Description  Unassigns a computer from an employee by its ID
-// @Tags         computers
-// @Accept       json
-// @Produce      json
-// @Param        id  path  int  true  "Computer ID"
-// @Success      200  {object}  models.Computer
-// @Failure      404  {object}  map[string]string
-// @Failure      500  {object}  map[string]string
-// @Router       /api/computers/{id}/unassign [post]
-// UnAssignComputer unassigns a computer from an employee by its ID.
-// It sets the EmployeeAbbreviation field to an empty string.
-// If the computer is not found, it returns a 404 error.
-// If the unassignment is successful, it returns the updated computer object.
-func UnAssignComputer(c *fiber.Ctx) error <span class="cov8" title="1">{
-        id := c.Params("id")
-
-        var computer models.Computer
-
-        if err := database.DB.First(&amp;computer, id).Error; err != nil </span><span class="cov8" title="1">{
-                return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Can't find Computer with ID " + id})
-        }</span>
-
-        <span class="cov8" title="1">computer.EmployeeAbbreviation = ""
-
-        if err := database.DB.Save(&amp;computer).Error; err != nil </span><span class="cov0" title="0">{
-                return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to unassign computer"})
-        }</span>
-        <span class="cov8" title="1">return c.JSON(computer)</span>
-}
 </pre>
 		
-		<pre class="file" id="file3" style="display: none">package main
+		<pre class="file" id="file10" style="display: none">package main
 
 import (
         "fmt"
@@ -824,7 +910,7 @@ func main() <span class="cov0" title="0">{
         app := fiber.New()
         app.Get("/swagger/*", swagger.HandlerDefault)
 
-        routes.SetupRoutes(app)
+        app = routes.SetupRoutes(app)
 
         fmt.Println("Starting server on port 3000...")
         app.Listen(":3000")
@@ -832,7 +918,7 @@ func main() <span class="cov0" title="0">{
 }</span>
 </pre>
 		
-		<pre class="file" id="file4" style="display: none">package models
+		<pre class="file" id="file11" style="display: none">package models
 
 import (
         "bytes"
@@ -935,17 +1021,18 @@ func NotifyAdmin(employeeAbbreviation string) error <span class="cov8" title="1"
 }
 </pre>
 		
-		<pre class="file" id="file5" style="display: none">package routes
+		<pre class="file" id="file12" style="display: none">package routes
 
 import (
         "fmt"
-        "greenbone-case-study/handlers"
+        "greenbone-case-study/handlers/computers"
+
         "time"
 
         "github.com/gofiber/fiber/v2"
 )
 
-func SetupRoutes(app *fiber.App) <span class="cov0" title="0">{
+func SetupRoutes(app *fiber.App) *fiber.App <span class="cov0" title="0">{
         app.Get("/", func(c *fiber.Ctx) error </span><span class="cov0" title="0">{
                 return c.SendString("Welcome to the Greenbone Case Study API!")
         }</span>)
@@ -953,14 +1040,17 @@ func SetupRoutes(app *fiber.App) <span class="cov0" title="0">{
         <span class="cov0" title="0">app.Get("/health", func(c *fiber.Ctx) error </span><span class="cov0" title="0">{
                 return c.SendString(fmt.Sprintf("API is running! Current time: %s", time.Now().Format(time.RFC3339)))
         }</span>)
-        <span class="cov0" title="0">app.Post("/api/computers", handlers.CreateComputer)
-        app.Get("/api/computers/:id", handlers.GetComputerByID)
-        app.Get("/api/computers", handlers.GetAllComputers)
-        app.Delete("/api/computers/:id", handlers.DeleteComputerByID)
-        app.Put("/api/computers/:id", handlers.UpdateComputerByID)
-        app.Put("/api/computers/:id/assign/:abbr", handlers.AssignComputer)
-        app.Get("/api/employees/:abbr/computers", handlers.GetEmployeeComputers)
-        app.Post("/api/computers/:id/unassign", handlers.UnAssignComputer)</span>
+
+        <span class="cov0" title="0">app.Post("/api/computers", computers.Create)
+        app.Get("/api/computers", computers.GetAll)
+        app.Get("/api/computers/:id", computers.GetByID)
+
+        app.Delete("/api/computers/:id", computers.DeleteByID)
+        app.Put("/api/computers/:id", computers.UpdateByID)
+        app.Put("/api/computers/:id/assign/:abbr", computers.Assign)
+        app.Get("/api/employees/:abbr/computers", computers.FilterByEmployeeAbbr)
+        app.Post("/api/computers/:id/unassign", computers.UnAssign)
+        return app</span>
 }
 </pre>
 		
