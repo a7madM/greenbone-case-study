@@ -50,7 +50,7 @@ func TestUpdateComputerByIDNotFound(t *testing.T) {
 
 func TestUpdateComputerByIDWithEmptyIP(t *testing.T) {
 	app := setupTestApp()
-	computer := createComputer("TestPC", "11:22:33:44:55:90", "192.168.1.2", "EMP1")
+	computer := createComputer("TestPC", "11:22:33:44:55:90", "192.168.1.2", "EM1")
 	payload := `{"mac_address":"11:22:33:44:55:90","computer_name":"TestPC","ip_address":""}`
 	req := httptest.NewRequest("PUT", fmt.Sprintf("/api/computers/%d", computer.ID), strings.NewReader(payload))
 	req.Header.Set("Content-Type", "application/json")
@@ -64,7 +64,7 @@ func TestUpdateComputerByIDWithEmptyIP(t *testing.T) {
 
 func TestUpdateComputerByIDWithInvalidJSON(t *testing.T) {
 	app := setupTestApp()
-	computer := createComputer("TestPC", "11:22:33:44:55:90", "192.168.1.2", "EMP1")
+	computer := createComputer("TestPC", "11:22:33:44:55:90", "192.168.1.2", "EM1")
 	req := httptest.NewRequest("PUT", fmt.Sprintf("/api/computers/%d", computer.ID), strings.NewReader(`{"mac_address": "invalid_json"`))
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := app.Test(req)

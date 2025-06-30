@@ -13,10 +13,10 @@ import (
 
 func TestGetEmployeeComputers(t *testing.T) {
 	app := setupTestApp()
-	createComputer("TestPC1", "11:22:33:44:55:91", "192.168.1.3", "EMP1")
-	createComputer("TestPC2", "11:22:33:44:55:92", "192.168.1.4", "EMP1")
+	createComputer("TestPC1", "11:22:33:44:55:91", "192.168.1.3", "EM1")
+	createComputer("TestPC2", "11:22:33:44:55:92", "192.168.1.4", "EM1")
 
-	req := httptest.NewRequest("GET", "/api/employees/EMP1/computers", nil)
+	req := httptest.NewRequest("GET", "/api/employees/EM1/computers", nil)
 	resp, err := app.Test(req)
 	assert.Nil(t, err)
 	assert.Equal(t, 200, resp.StatusCode)
@@ -32,7 +32,7 @@ func TestGetEmployeeComputerError(t *testing.T) {
 	app := setupTestApp()
 	database.DB.Exec("DROP TABLE computers;")
 
-	req := httptest.NewRequest("GET", "/api/employees/EMP1/computers", nil)
+	req := httptest.NewRequest("GET", "/api/employees/EM1/computers", nil)
 	resp, err := app.Test(req)
 	assert.Nil(t, err)
 	assert.Equal(t, 500, resp.StatusCode)

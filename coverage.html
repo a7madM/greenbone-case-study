@@ -77,7 +77,7 @@
 				
 				<option value="file10">greenbone-case-study/main.go (0.0%)</option>
 				
-				<option value="file11">greenbone-case-study/models/computer.go (90.9%)</option>
+				<option value="file11">greenbone-case-study/models/computer.go (88.6%)</option>
 				
 				<option value="file12">greenbone-case-study/routes/route.go (0.0%)</option>
 				
@@ -405,6 +405,56 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Employee Abbreviation",
                         "name": "abbr",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Computer"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/computers/{id}/unassign": {
+            "post": {
+                "description": "Unassigns a computer from an employee by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "computers"
+                ],
+                "summary": "Unassign a computer from an employee",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Computer ID",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
@@ -955,8 +1005,12 @@ func (c *Computer) BeforeSave(tx *gorm.DB) (err error) <span class="cov8" title=
         }</span>
         <span class="cov8" title="1">var count int64
 
+        // check abbreviation length
+        if len(c.EmployeeAbbreviation) &gt; 3 </span><span class="cov0" title="0">{
+                return fmt.Errorf("employee abbreviation cannot be longer than 3 characters")
+        }</span>
         // Check for duplicate MAC address
-        tx.Model(&amp;Computer{}).Where("mac_address = ? AND id != ?", c.MACAddress, c.ID).Count(&amp;count)
+        <span class="cov8" title="1">tx.Model(&amp;Computer{}).Where("mac_address = ? AND id != ?", c.MACAddress, c.ID).Count(&amp;count)
         if count &gt; 0 </span><span class="cov8" title="1">{
                 return gorm.ErrDuplicatedKey
         }</span>

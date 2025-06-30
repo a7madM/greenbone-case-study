@@ -3,7 +3,6 @@ package computers
 import (
 	"encoding/json"
 	"fmt"
-	"greenbone-case-study/database"
 	"greenbone-case-study/models"
 	"io"
 	"net/http/httptest"
@@ -14,7 +13,7 @@ import (
 
 func TestUnAssignComputer(t *testing.T) {
 	app := setupTestApp()
-	computer := createComputer("TestPC", "11:22:33:44:55:90", "192.168.1.2", "EMP1")
+	computer := createComputer("TestPC", "11:22:33:44:55:90", "192.168.1.2", "EM1")
 	req := httptest.NewRequest("POST", fmt.Sprintf("/api/computers/%d/unassign", computer.ID), nil)
 	resp, err := app.Test(req)
 	assert.Nil(t, err)
@@ -36,15 +35,4 @@ func TestUnAssignComputerNotFound(t *testing.T) {
 
 	body, _ := io.ReadAll(resp.Body)
 	assert.Equal(t, `{"error":"Can't find Computer with ID 9999"}`, string(body))
-}
-
-func createComputer(name, macAddress, ipAddr, employeeAbbreviation string) models.Computer {
-	computer := models.Computer{
-		MACAddress:           macAddress,
-		ComputerName:         name,
-		IPAddress:            ipAddr,
-		EmployeeAbbreviation: employeeAbbreviation,
-	}
-	database.DB.Create(&computer)
-	return computer
 }

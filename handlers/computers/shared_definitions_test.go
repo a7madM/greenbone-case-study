@@ -27,3 +27,14 @@ func SetupComputerRoutes(app *fiber.App) {
 	app.Get("/api/employees/:abbr/computers", FilterByEmployeeAbbr)
 	app.Post("/api/computers/:id/unassign", UnAssign)
 }
+
+func createComputer(name, macAddress, ipAddr, employeeAbbreviation string) models.Computer {
+	computer := models.Computer{
+		MACAddress:           macAddress,
+		ComputerName:         name,
+		IPAddress:            ipAddr,
+		EmployeeAbbreviation: employeeAbbreviation,
+	}
+	database.DB.Create(&computer)
+	return computer
+}
