@@ -1,10 +1,8 @@
 package models
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"net/http"
+	"greenbone-case-study/utils"
 
 	"gorm.io/gorm"
 )
@@ -62,44 +60,8 @@ func (c *Computer) AfterSave(tx *gorm.DB) (err error) {
 	tx.Model(&Computer{}).Where("employee_abbreviation = ?", employee).Count(&count)
 
 	if count >= 3 {
-		return NotifyAdmin(employee)
+		return utils.NotifyAdmin(employee, int(count))
 	}
 
-	return nil
-}
-
-// this url should be injected from environment variables or configuration, but for simplicity, it's hardcoded here.
-var MESSAGING_SYSTEM_URL = "http://message_queue:8080/api/notify"
-
-func NotifyAdmin(employeeAbbreviation string) error {
-
-	type NotificationPayload struct {
-		EmployeeAbbreviation string `json:"employeeAbbreviation"`
-		Level                string `json:"level"`
-		Message              string `json:"message"`
-	}
-
-	payload := NotificationPayload{
-		EmployeeAbbreviation: employeeAbbreviation,
-		Level:                "warning",
-		Message:              "some message",
-	}
-
-	jsonData, err := json.Marshal(payload)
-	if err != nil {
-		return err
-	}
-
-	resp, err := http.Post(MESSAGING_SYSTEM_URL, "application/json", bytes.NewBuffer(jsonData))
-
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to notify admin: %s", resp.Status)
-	}
 	return nil
 }
