@@ -23,4 +23,5 @@ func SetupRoutes(app *fiber.App) {
 	app.Put("/api/computers/:id", handlers.UpdateComputerByID)
 	app.Put("/api/computers/:id/assign/:abbr", handlers.AssignComputer)
 	app.Get("/api/employees/:abbr/computers", handlers.GetEmployeeComputers)
+	app.Post("/api/computers/:id/unassign", handlers.UnAssignComputer)
 }
