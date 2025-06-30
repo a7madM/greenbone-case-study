@@ -1,5 +1,4 @@
 mode: set
-greenbone-case-study/main.go:16.13,27.2 6 0
 greenbone-case-study/docs/docs.go:401.13,403.2 1 0
 greenbone-case-study/database/db.go:14.18,19.16 2 0
 greenbone-case-study/database/db.go:19.16,21.3 1 0
@@ -7,6 +6,12 @@ greenbone-case-study/database/db.go:23.2,24.15 2 0
 greenbone-case-study/database/db.go:27.35,32.16 2 0
 greenbone-case-study/database/db.go:32.16,34.3 1 0
 greenbone-case-study/database/db.go:35.2,36.17 2 0
+greenbone-case-study/main.go:16.13,27.2 6 0
+greenbone-case-study/routes/route.go:11.34,12.40 1 0
+greenbone-case-study/routes/route.go:12.40,14.3 1 0
+greenbone-case-study/routes/route.go:16.2,16.46 1 0
+greenbone-case-study/routes/route.go:16.46,18.3 1 0
+greenbone-case-study/routes/route.go:19.2,26.68 8 0
 greenbone-case-study/models/computer.go:25.36,26.69 1 0
 greenbone-case-study/models/computer.go:26.69,28.3 1 0
 greenbone-case-study/models/computer.go:29.2,29.13 1 0
@@ -29,11 +34,6 @@ greenbone-case-study/models/computer.go:91.16,93.3 1 0
 greenbone-case-study/models/computer.go:95.2,97.38 2 0
 greenbone-case-study/models/computer.go:97.38,99.3 1 0
 greenbone-case-study/models/computer.go:100.2,100.12 1 0
-greenbone-case-study/routes/route.go:11.34,12.40 1 0
-greenbone-case-study/routes/route.go:12.40,14.3 1 0
-greenbone-case-study/routes/route.go:16.2,16.46 1 0
-greenbone-case-study/routes/route.go:16.46,18.3 1 0
-greenbone-case-study/routes/route.go:19.2,25.74 7 0
 greenbone-case-study/database/db.go:14.18,19.16 2 0
 greenbone-case-study/database/db.go:19.16,21.3 1 0
 greenbone-case-study/database/db.go:23.2,24.15 2 0
@@ -79,6 +79,11 @@ greenbone-case-study/handlers/computer.go:216.2,216.25 1 1
 greenbone-case-study/handlers/computer.go:232.47,239.16 5 1
 greenbone-case-study/handlers/computer.go:239.16,243.3 1 1
 greenbone-case-study/handlers/computer.go:245.2,245.49 1 1
+greenbone-case-study/handlers/computer.go:263.43,268.63 3 1
+greenbone-case-study/handlers/computer.go:268.63,270.3 1 1
+greenbone-case-study/handlers/computer.go:272.2,274.58 2 1
+greenbone-case-study/handlers/computer.go:274.58,276.3 1 0
+greenbone-case-study/handlers/computer.go:277.2,277.25 1 1
 greenbone-case-study/models/computer.go:25.36,26.69 1 1
 greenbone-case-study/models/computer.go:26.69,28.3 1 1
 greenbone-case-study/models/computer.go:29.2,29.13 1 1

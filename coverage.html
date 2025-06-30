@@ -59,7 +59,7 @@
 				
 				<option value="file1">greenbone-case-study/docs/docs.go (0.0%)</option>
 				
-				<option value="file2">greenbone-case-study/handlers/computer.go (98.5%)</option>
+				<option value="file2">greenbone-case-study/handlers/computer.go (97.4%)</option>
 				
 				<option value="file3">greenbone-case-study/main.go (0.0%)</option>
 				
@@ -769,6 +769,38 @@ func GetEmployeeComputers(c *fiber.Ctx) error <span class="cov8" title="1">{
 
         <span class="cov8" title="1">return c.Status(fiber.StatusOK).JSON(computers)</span>
 }
+
+// UnAssignComputer godoc
+// @Summary      Unassign a computer from an employee
+// @Description  Unassigns a computer from an employee by its ID
+// @Tags         computers
+// @Accept       json
+// @Produce      json
+// @Param        id  path  int  true  "Computer ID"
+// @Success      200  {object}  models.Computer
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/computers/{id}/unassign [post]
+// UnAssignComputer unassigns a computer from an employee by its ID.
+// It sets the EmployeeAbbreviation field to an empty string.
+// If the computer is not found, it returns a 404 error.
+// If the unassignment is successful, it returns the updated computer object.
+func UnAssignComputer(c *fiber.Ctx) error <span class="cov8" title="1">{
+        id := c.Params("id")
+
+        var computer models.Computer
+
+        if err := database.DB.First(&amp;computer, id).Error; err != nil </span><span class="cov8" title="1">{
+                return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Can't find Computer with ID " + id})
+        }</span>
+
+        <span class="cov8" title="1">computer.EmployeeAbbreviation = ""
+
+        if err := database.DB.Save(&amp;computer).Error; err != nil </span><span class="cov0" title="0">{
+                return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to unassign computer"})
+        }</span>
+        <span class="cov8" title="1">return c.JSON(computer)</span>
+}
 </pre>
 		
 		<pre class="file" id="file3" style="display: none">package main
@@ -927,7 +959,8 @@ func SetupRoutes(app *fiber.App) <span class="cov0" title="0">{
         app.Delete("/api/computers/:id", handlers.DeleteComputerByID)
         app.Put("/api/computers/:id", handlers.UpdateComputerByID)
         app.Put("/api/computers/:id/assign/:abbr", handlers.AssignComputer)
-        app.Get("/api/employees/:abbr/computers", handlers.GetEmployeeComputers)</span>
+        app.Get("/api/employees/:abbr/computers", handlers.GetEmployeeComputers)
+        app.Post("/api/computers/:id/unassign", handlers.UnAssignComputer)</span>
 }
 </pre>
 		
