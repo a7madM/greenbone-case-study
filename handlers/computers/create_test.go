@@ -24,10 +24,10 @@ func TestCreateComputer(t *testing.T) {
 func TestCreateComputerWhenEmployeeAbbreviationIsOverAssigned(t *testing.T) { // 3 computers or more are assigned to the same employee
 	app := setupTestApp()
 
-	createComputer("TestPC1", "11:22:33:44:55:90", "192.168.1.2", "EMP1")
-	createComputer("TestPC2", "11:22:33:44:55:91", "192.168.1.3", "EMP1")
+	createComputer("TestPC1", "11:22:33:44:55:90", "192.168.1.2", "EM1")
+	createComputer("TestPC2", "11:22:33:44:55:91", "192.168.1.3", "EM1")
 
-	payload := `{"mac_address":"11:22:33:44:55:94","computer_name":"TestPC","ip_address":"192.168.1.6","employee_abbreviation":"EMP1"}`
+	payload := `{"mac_address":"11:22:33:44:55:94","computer_name":"TestPC","ip_address":"192.168.1.6","employee_abbreviation":"EM1"}`
 	req := httptest.NewRequest("POST", "/api/computers", strings.NewReader(payload))
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := app.Test(req)

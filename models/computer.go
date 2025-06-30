@@ -35,6 +35,10 @@ func (c *Computer) BeforeSave(tx *gorm.DB) (err error) {
 	}
 	var count int64
 
+	// check abbreviation length
+	if len(c.EmployeeAbbreviation) > 3 {
+		return fmt.Errorf("employee abbreviation cannot be longer than 3 characters")
+	}
 	// Check for duplicate MAC address
 	tx.Model(&Computer{}).Where("mac_address = ? AND id != ?", c.MACAddress, c.ID).Count(&count)
 	if count > 0 {
