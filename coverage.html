@@ -77,9 +77,11 @@
 				
 				<option value="file10">greenbone-case-study/main.go (0.0%)</option>
 				
-				<option value="file11">greenbone-case-study/models/computer.go (88.6%)</option>
+				<option value="file11">greenbone-case-study/models/computer.go (95.7%)</option>
 				
 				<option value="file12">greenbone-case-study/routes/route.go (0.0%)</option>
+				
+				<option value="file13">greenbone-case-study/utils/notifier.go (75.0%)</option>
 				
 				</select>
 			</div>
@@ -971,10 +973,8 @@ func main() <span class="cov0" title="0">{
 		<pre class="file" id="file11" style="display: none">package models
 
 import (
-        "bytes"
-        "encoding/json"
         "fmt"
-        "net/http"
+        "greenbone-case-study/utils"
 
         "gorm.io/gorm"
 )
@@ -1032,45 +1032,9 @@ func (c *Computer) AfterSave(tx *gorm.DB) (err error) <span class="cov8" title="
         tx.Model(&amp;Computer{}).Where("employee_abbreviation = ?", employee).Count(&amp;count)
 
         if count &gt;= 3 </span><span class="cov8" title="1">{
-                return NotifyAdmin(employee)
+                return utils.NotifyAdmin(employee, int(count))
         }</span>
 
-        <span class="cov8" title="1">return nil</span>
-}
-
-// this url should be injected from environment variables or configuration, but for simplicity, it's hardcoded here.
-var MESSAGING_SYSTEM_URL = "http://message_queue:8080/api/notify"
-
-func NotifyAdmin(employeeAbbreviation string) error <span class="cov8" title="1">{
-
-        type NotificationPayload struct {
-                EmployeeAbbreviation string `json:"employeeAbbreviation"`
-                Level                string `json:"level"`
-                Message              string `json:"message"`
-        }
-
-        payload := NotificationPayload{
-                EmployeeAbbreviation: employeeAbbreviation,
-                Level:                "warning",
-                Message:              "some message",
-        }
-
-        jsonData, err := json.Marshal(payload)
-        if err != nil </span><span class="cov0" title="0">{
-                return err
-        }</span>
-
-        <span class="cov8" title="1">resp, err := http.Post(MESSAGING_SYSTEM_URL, "application/json", bytes.NewBuffer(jsonData))
-
-        if err != nil </span><span class="cov0" title="0">{
-                return err
-        }</span>
-
-        <span class="cov8" title="1">defer resp.Body.Close()
-
-        if resp.StatusCode != http.StatusOK </span><span class="cov0" title="0">{
-                return fmt.Errorf("failed to notify admin: %s", resp.Status)
-        }</span>
         <span class="cov8" title="1">return nil</span>
 }
 </pre>
@@ -1105,6 +1069,53 @@ func SetupRoutes(app *fiber.App) *fiber.App <span class="cov0" title="0">{
         app.Get("/api/employees/:abbr/computers", computers.FilterByEmployeeAbbr)
         app.Post("/api/computers/:id/unassign", computers.UnAssign)
         return app</span>
+}
+</pre>
+		
+		<pre class="file" id="file13" style="display: none">package utils
+
+import (
+        "bytes"
+        "encoding/json"
+        "fmt"
+        "net/http"
+)
+
+// this url should be injected from environment variables or configuration, but for simplicity,
+// it's hardcoded here, but for production I will depend on environment variables.
+var MESSAGING_SYSTEM_URL = "http://message_queue:8080/api/notify"
+
+func NotifyAdmin(employeeAbbreviation string, assignedComputersCount int) error <span class="cov8" title="1">{
+
+        type NotificationPayload struct {
+                EmployeeAbbreviation string `json:"employeeAbbreviation"`
+                Level                string `json:"level"`
+                Message              string `json:"message"`
+        }
+
+        payload := NotificationPayload{
+                EmployeeAbbreviation: employeeAbbreviation,
+                Level:                "warning",
+                Message:              fmt.Sprintf("The employee with abbreviation %s has %d computers assigned.", employeeAbbreviation, assignedComputersCount),
+        }
+
+        jsonData, err := json.Marshal(payload)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">resp, err := http.Post(MESSAGING_SYSTEM_URL, "application/json", bytes.NewBuffer(jsonData))
+
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">defer resp.Body.Close()
+
+        if resp.StatusCode != http.StatusOK </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to notify admin: %s", resp.Status)
+        }</span>
+        <span class="cov8" title="1">return nil</span>
 }
 </pre>
 		
