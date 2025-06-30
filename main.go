@@ -19,7 +19,7 @@ func main() {
 	app := fiber.New()
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
-	routes.SetupRoutes(app)
+	app = routes.SetupRoutes(app)
 
 	fmt.Println("Starting server on port 3000...")
 	app.Listen(":3000")
