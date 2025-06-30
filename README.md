@@ -1,6 +1,4 @@
-Greenbone Case Study
-
-## Getting Started
+# Greenbone Case Study
 
 ### Prerequisites
 - Docker and Docker Compose installed
@@ -39,3 +37,10 @@ Once running, the application will be available at:
 - API documentation: http://localhost:3000/swagger
 
 ![Screenshot 2025-06-30 at 11 57 52](https://github.com/user-attachments/assets/fd399833-95ff-4365-95ed-e73ec2029c48)
+
+### System Overview
+![Screenshot 2025-06-30 at 12 43 08](https://github.com/user-attachments/assets/73cb03f5-97a6-4410-8b0f-d366601e97c9)
+
+### Sequence Diagram
+![Screenshot 2025-06-30 at 12 40 12](https://github.com/user-attachments/assets/f3da35c4-8941-412b-9361-76be90972b80)
+
