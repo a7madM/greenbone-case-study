@@ -303,6 +303,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/computers/{id}/unassign": {
+            "post": {
+                "description": "Unassigns a computer from an employee by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "computers"
+                ],
+                "summary": "Unassign a computer from an employee",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Computer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Computer"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/employees/{abbr}/computers": {
             "get": {
                 "description": "Retrieves all computers assigned to an employee by their abbreviation",

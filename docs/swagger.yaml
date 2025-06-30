@@ -208,6 +208,39 @@ paths:
       summary: Assign a computer to an employee
       tags:
       - computers
+  /api/computers/{id}/unassign:
+    post:
+      consumes:
+      - application/json
+      description: Unassigns a computer from an employee by its ID
+      parameters:
+      - description: Computer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Computer'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Unassign a computer from an employee
+      tags:
+      - computers
   /api/employees/{abbr}/computers:
     get:
       consumes:
